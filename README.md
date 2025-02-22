@@ -8,4 +8,4 @@ npm run dev
 
 ## License
 
-TODO (MIT)
+MIT(LICENSE).
