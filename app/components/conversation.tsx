@@ -1,28 +1,7 @@
 "use client";
 
 import { useConversation } from "@11labs/react";
-import { useCallback, useState } from "react";
-
-type VoiceActivityIndicatorProps = {
-  isActive: boolean;
-  label: string;
-};
-
-export function VoiceActivityIndicator({
-  isActive,
-  label,
-}: VoiceActivityIndicatorProps) {
-  return (
-    <div className="flex items-center gap-2">
-      <div
-        className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-          isActive ? "bg-green-500" : "bg-gray-300"
-        }`}
-      />
-      <div className="text-sm text-gray-200">{label}</div>
-    </div>
-  );
-}
+import { useCallback, useState, useRef, useEffect } from "react";
 
 type Message = {
   message: string;
@@ -33,30 +12,112 @@ type ChatMessageLogProps = {
   messages: Message[];
 };
 
-function ChatMessageLog({ messages }: ChatMessageLogProps) {
+function ChatMessageLog({
+  messages,
+  isUserTurn,
+}: ChatMessageLogProps & { isUserTurn: boolean }) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   return (
-    <div className="w-full max-w-md bg-gray-900 rounded-lg shadow-lg border border-gray-700 p-4 mt-4">
-      <div className="flex flex-col gap-4 min-h-[400px] max-h-[600px] overflow-y-auto">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              msg.source === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
+    <>
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes pulse {
+          0% {
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+          }
+          70% {
+            box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+          }
+        }
+        .word-animate {
+          opacity: 0;
+          animation: fadeIn 0.3s ease-out forwards;
+          display: inline-block;
+        }
+        .chat-container {
+          transition: all 0.3s ease;
+        }
+        .chat-container.user-turn {
+          animation: pulse 2s infinite;
+          border-color: rgb(34, 197, 94);
+        }
+      `}</style>
+      <div
+        className={`w-full max-w-md bg-gray-900 rounded-lg shadow-lg border border-gray-700 p-4 mt-4 chat-container ${
+          isUserTurn ? "user-turn" : ""
+        }`}
+      >
+        <div className="flex flex-col gap-4 min-h-[400px] max-h-[600px] overflow-y-auto">
+          {messages.map((msg, messageIndex) => (
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                msg.source === "user"
-                  ? "bg-blue-600 text-gray-100"
-                  : "bg-gray-800 text-gray-200"
+              key={messageIndex}
+              className={`flex ${
+                msg.source === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              {msg.message}
+              <div
+                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                  msg.source === "user"
+                    ? "bg-blue-600 text-gray-100"
+                    : "bg-gray-800 text-gray-200"
+                }`}
+              >
+                {msg.source === "user"
+                  ? msg.message
+                  : msg.message.split(" ").map((word, wordIndex) => (
+                      <span key={wordIndex}>
+                        <span
+                          className="word-animate"
+                          style={{
+                            animationDelay: `${
+                              messageIndex * 300 + wordIndex * 100
+                            }ms`,
+                          }}
+                        >
+                          {word}
+                        </span>
+                        {/* Add space after each word except the last one */}
+                        {wordIndex < msg.message.split(" ").length - 1 && (
+                          <span
+                            className="word-animate"
+                            style={{
+                              animationDelay: `${
+                                messageIndex * 300 + wordIndex * 100
+                              }ms`,
+                            }}
+                          >
+                            &nbsp;
+                          </span>
+                        )}
+                      </span>
+                    ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -91,6 +152,9 @@ export function Conversation() {
     await conversation.endSession();
   }, [conversation]);
 
+  const isUserTurn =
+    conversation.status === "connected" && !conversation.isSpeaking;
+
   return (
     <>
       <div className="flex gap-2 my-4">
@@ -111,24 +175,7 @@ export function Conversation() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <p className="">Status: {conversation.status}</p>
-
-        <div className="flex flex-col gap-2">
-          <VoiceActivityIndicator
-            isActive={
-              conversation.status === "connected" && !conversation.isSpeaking
-            }
-            label="Your turn to speak"
-          />
-          <VoiceActivityIndicator
-            isActive={
-              conversation.status === "connected" && conversation.isSpeaking
-            }
-            label="Narrator is speaking"
-          />
-        </div>
-
-        <ChatMessageLog messages={messages} />
+        <ChatMessageLog messages={messages} isUserTurn={isUserTurn} />
       </div>
     </>
   );
