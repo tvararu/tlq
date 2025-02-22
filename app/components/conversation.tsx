@@ -12,10 +12,7 @@ type ChatMessageLogProps = {
   messages: Message[];
 };
 
-function ChatMessageLog({
-  messages,
-  isUserTurn,
-}: ChatMessageLogProps & { isUserTurn: boolean }) {
+function ChatMessageLog({ messages }: ChatMessageLogProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -38,17 +35,6 @@ function ChatMessageLog({
             transform: translateY(0);
           }
         }
-        @keyframes pulse {
-          0% {
-            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
-          }
-          70% {
-            box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
-          }
-          100% {
-            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-          }
-        }
         .word-animate {
           opacity: 0;
           animation: fadeIn 0.3s ease-out forwards;
@@ -57,17 +43,9 @@ function ChatMessageLog({
         .chat-container {
           transition: all 0.3s ease;
         }
-        .chat-container.user-turn {
-          animation: pulse 2s infinite;
-          border-color: rgb(34, 197, 94);
-        }
       `}</style>
-      <div
-        className={`w-full max-w-md bg-gray-900 rounded-lg shadow-lg border border-gray-700 p-4 mt-4 chat-container ${
-          isUserTurn ? "user-turn" : ""
-        }`}
-      >
-        <div className="flex flex-col gap-4 min-h-[400px] max-h-[600px] overflow-y-auto">
+      <div className="w-full chat-container">
+        <div className="flex flex-col gap-4">
           {messages.map((msg, messageIndex) => (
             <div
               key={messageIndex}
@@ -194,42 +172,49 @@ export function Conversation() {
 
   return (
     <>
-      <div className="flex gap-2 my-4 items-center">
-        <button
-          onClick={startConversation}
-          disabled={conversation.status === "connected"}
-          className="px-4 py-2 bg-green-600 text-white rounded disabled:bg-gray-300 disabled:opacity-50"
-        >
-          📞 {conversation.status !== "connected" && "Start"}
-        </button>
-        <button
-          onClick={stopConversation}
-          disabled={conversation.status !== "connected"}
-          className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-300 disabled:opacity-50"
-        >
-          👋
-        </button>
+      <div
+        className={`fixed top-0 left-0 right-0 z-10 p-4 border-b border-gray-700 transition-colors duration-300 ${
+          isUserTurn ? "bg-green-900" : "bg-gray-900"
+        }`}
+      >
+        <div className="flex gap-2 items-center max-w-md mx-auto">
+          <button
+            onClick={startConversation}
+            disabled={conversation.status === "connected"}
+            className="px-4 py-2 bg-green-600 text-white rounded disabled:bg-gray-300 disabled:opacity-50"
+          >
+            📞 {conversation.status !== "connected" && "Start"}
+          </button>
+          <button
+            onClick={stopConversation}
+            disabled={conversation.status !== "connected"}
+            className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-300 disabled:opacity-50"
+          >
+            👋
+          </button>
 
-        {conversation.status === "connected" && (
-          <div className="flex items-center gap-3 ml-4">
-            <div className="text-gray-200 min-w-[80px]">
-              {formatTime(duration)} / 5:00
+          {conversation.status === "connected" && (
+            <div className="flex items-center gap-3 ml-4">
+              <div className="text-gray-200 min-w-[80px]">
+                {formatTime(duration)} / 5:00
+              </div>
+              <div className="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-green-600 transition-all duration-1000 ease-linear"
+                  style={{
+                    width: `${progressPercent}%`,
+                    backgroundColor:
+                      progressPercent > 80 ? "#ef4444" : "#22c55e",
+                  }}
+                />
+              </div>
             </div>
-            <div className="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-600 transition-all duration-1000 ease-linear"
-                style={{
-                  width: `${progressPercent}%`,
-                  backgroundColor: progressPercent > 80 ? "#ef4444" : "#22c55e",
-                }}
-              />
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <ChatMessageLog messages={messages} isUserTurn={isUserTurn} />
+      <div className="pt-24 flex flex-col gap-4 max-w-md mx-auto">
+        <ChatMessageLog messages={messages} />
       </div>
     </>
   );
