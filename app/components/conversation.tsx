@@ -44,7 +44,7 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
           transition: all 0.3s ease;
         }
       `}</style>
-      <div className="w-full chat-container">
+      <div className="pt-32 w-full chat-container">
         <div className="flex flex-col gap-4">
           {messages.map((msg, messageIndex) => (
             <div
@@ -54,10 +54,10 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
               }`}
             >
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                className={`rounded-lg py-2 ${
                   msg.source === "user"
-                    ? "bg-blue-600 text-gray-100"
-                    : "bg-gray-800 text-gray-200"
+                    ? "max-w-[80%] px-4 bg-gray-800 text-gray-200"
+                    : "text-gray-200"
                 }`}
               >
                 {msg.source === "user"
@@ -72,21 +72,8 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
                             }ms`,
                           }}
                         >
-                          {word}
+                          {word}&nbsp;
                         </span>
-                        {/* Add space after each word except the last one */}
-                        {wordIndex < msg.message.split(" ").length - 1 && (
-                          <span
-                            className="word-animate"
-                            style={{
-                              animationDelay: `${
-                                messageIndex * 300 + wordIndex * 100
-                              }ms`,
-                            }}
-                          >
-                            &nbsp;
-                          </span>
-                        )}
                       </span>
                     ))}
               </div>
@@ -181,14 +168,14 @@ export function Conversation() {
           <button
             onClick={startConversation}
             disabled={conversation.status === "connected"}
-            className="px-4 py-2 bg-green-600 text-white rounded disabled:bg-gray-300 disabled:opacity-50"
+            className="px-4 py-2 bg-green-600 text-white disabled:bg-gray-300 disabled:opacity-50"
           >
             📞 {conversation.status !== "connected" && "Start"}
           </button>
           <button
             onClick={stopConversation}
             disabled={conversation.status !== "connected"}
-            className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-300 disabled:opacity-50"
+            className="px-4 py-2 bg-red-500 text-white disabled:bg-gray-300 disabled:opacity-50"
           >
             👋
           </button>
@@ -213,7 +200,7 @@ export function Conversation() {
         </div>
       </div>
 
-      <div className="pt-24 flex flex-col gap-4 max-w-md mx-auto">
+      <div className="flex flex-col gap-4 max-w-md mx-auto">
         <ChatMessageLog messages={messages} />
       </div>
     </>
