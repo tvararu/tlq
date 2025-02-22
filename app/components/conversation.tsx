@@ -161,7 +161,7 @@ export function Conversation() {
     <>
       <div
         className={`fixed top-0 left-0 right-0 z-10 p-4 border-b border-gray-700 transition-colors duration-300 ${
-          isUserTurn ? "bg-green-500" : ""
+          isUserTurn ? "bg-green-500" : "bg-black"
         }`}
       >
         <div className="flex gap-2 justify-between max-w-md mx-auto">
