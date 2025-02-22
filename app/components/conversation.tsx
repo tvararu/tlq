@@ -215,7 +215,7 @@ export function Conversation() {
             <div className="text-gray-200 min-w-[80px]">
               {formatTime(duration)} / 5:00
             </div>
-            <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
+            <div className="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-green-600 transition-all duration-1000 ease-linear"
                 style={{
