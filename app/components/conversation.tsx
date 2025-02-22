@@ -29,6 +29,37 @@ type Message = {
   source: "ai" | "user";
 };
 
+type ChatMessageLogProps = {
+  messages: Message[];
+};
+
+function ChatMessageLog({ messages }: ChatMessageLogProps) {
+  return (
+    <div className="w-full max-w-md bg-white rounded-lg shadow-sm border p-4 mt-4">
+      <div className="flex flex-col gap-4 min-h-[400px] max-h-[600px] overflow-y-auto">
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`flex ${
+              msg.source === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
+            <div
+              className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                msg.source === "user"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-800"
+              }`}
+            >
+              {msg.message}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Conversation() {
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -97,28 +128,7 @@ export function Conversation() {
           />
         </div>
 
-        <div className="w-full max-w-md bg-white rounded-lg shadow-sm border p-4 mt-4">
-          <div className="flex flex-col gap-4 min-h-[400px] max-h-[600px] overflow-y-auto">
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  msg.source === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    msg.source === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {msg.message}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ChatMessageLog messages={messages} />
       </div>
     </>
   );
