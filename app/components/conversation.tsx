@@ -130,7 +130,7 @@ function formatTime(seconds: number): string {
 export function Conversation() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [duration, setDuration] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const MAX_DURATION = 300; // 5 minutes in seconds
 
