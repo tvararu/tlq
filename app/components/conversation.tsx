@@ -200,7 +200,7 @@ export function Conversation() {
           disabled={conversation.status === "connected"}
           className="px-4 py-2 bg-green-600 text-white rounded disabled:bg-gray-300 disabled:opacity-50"
         >
-          📞 Start
+          📞 {conversation.status !== "connected" && "Start"}
         </button>
         <button
           onClick={stopConversation}
