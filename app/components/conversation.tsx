@@ -161,23 +161,16 @@ export function Conversation() {
     <>
       <div
         className={`fixed top-0 left-0 right-0 z-10 p-4 border-b border-gray-700 transition-colors duration-300 ${
-          isUserTurn ? "bg-green-900" : "bg-gray-900"
+          isUserTurn ? "bg-green-500" : ""
         }`}
       >
-        <div className="flex gap-2 items-center max-w-md mx-auto">
+        <div className="flex gap-2 justify-between max-w-md mx-auto">
           <button
             onClick={startConversation}
             disabled={conversation.status === "connected"}
-            className="px-4 py-2 bg-green-600 text-white disabled:bg-gray-300 disabled:opacity-50"
+            className="px-4 py-2 bg-green-500 rounded-lg text-green-900 disabled:bg-gray-800 disabled:opacity-50 font-bold"
           >
-            📞 {conversation.status !== "connected" && "Start"}
-          </button>
-          <button
-            onClick={stopConversation}
-            disabled={conversation.status !== "connected"}
-            className="px-4 py-2 bg-red-500 text-white disabled:bg-gray-300 disabled:opacity-50"
-          >
-            👋
+            📞 {conversation.status !== "connected" && "Hello?"}
           </button>
 
           {conversation.status === "connected" && (
@@ -197,6 +190,14 @@ export function Conversation() {
               </div>
             </div>
           )}
+
+          <button
+            onClick={stopConversation}
+            disabled={conversation.status !== "connected"}
+            className="px-4 py-2 bg-red-500 rounded-lg text-red-900 disabled:bg-gray-800 disabled:opacity-50 font-bold"
+          >
+            👋
+          </button>
         </div>
       </div>
 
