@@ -19,7 +19,7 @@ export function VoiceActivityIndicator({
           isActive ? "bg-green-500" : "bg-gray-300"
         }`}
       />
-      <div className="text-sm text-gray-300">{label}</div>
+      <div className="text-sm text-gray-200">{label}</div>
     </div>
   );
 }
@@ -35,7 +35,7 @@ type ChatMessageLogProps = {
 
 function ChatMessageLog({ messages }: ChatMessageLogProps) {
   return (
-    <div className="w-full max-w-md bg-white rounded-lg shadow-sm border p-4 mt-4">
+    <div className="w-full max-w-md bg-gray-900 rounded-lg shadow-lg border border-gray-700 p-4 mt-4">
       <div className="flex flex-col gap-4 min-h-[400px] max-h-[600px] overflow-y-auto">
         {messages.map((msg, index) => (
           <div
@@ -47,8 +47,8 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
             <div
               className={`max-w-[80%] rounded-lg px-4 py-2 ${
                 msg.source === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 text-gray-800"
+                  ? "bg-blue-600 text-gray-100"
+                  : "bg-gray-800 text-gray-200"
               }`}
             >
               {msg.message}
