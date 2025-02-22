@@ -2,6 +2,7 @@
 
 import { useConversation } from "@11labs/react";
 import { useCallback } from "react";
+import { VoiceActivityIndicator } from "./voice-activity-indicator";
 
 export function Conversation() {
   const conversation = useConversation({
@@ -30,7 +31,7 @@ export function Conversation() {
   }, [conversation]);
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-8">
       <div className="flex gap-2">
         <button
           onClick={startConversation}
@@ -48,9 +49,23 @@ export function Conversation() {
         </button>
       </div>
 
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-4">
         <p>Status: {conversation.status}</p>
-        <p>Agent is {conversation.isSpeaking ? "speaking" : "listening"}</p>
+
+        <div className="flex flex-col gap-2">
+          <VoiceActivityIndicator
+            isActive={
+              conversation.status === "connected" && !conversation.isSpeaking
+            }
+            label="Waiting for your input"
+          />
+          <VoiceActivityIndicator
+            isActive={
+              conversation.status === "connected" && conversation.isSpeaking
+            }
+            label="Narrator is speaking"
+          />
+        </div>
       </div>
     </div>
   );
