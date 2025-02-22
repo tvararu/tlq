@@ -121,8 +121,18 @@ function ChatMessageLog({
   );
 }
 
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
 export function Conversation() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [duration, setDuration] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout>();
+
+  const MAX_DURATION = 300; // 5 minutes in seconds
 
   const conversation = useConversation({
     onConnect: () => console.log("Connected"),
@@ -133,31 +143,58 @@ export function Conversation() {
     onError: (error: string) => console.error("Error:", error),
   });
 
+  const stopConversation = useCallback(async () => {
+    await conversation.endSession();
+  }, [conversation]);
+
+  useEffect(() => {
+    if (conversation.status === "connected") {
+      timerRef.current = setInterval(() => {
+        setDuration((prev) => {
+          if (prev >= MAX_DURATION) {
+            stopConversation().catch((error) =>
+              console.error("Failed to stop conversation:", error)
+            );
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      setDuration(0);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [conversation.status, stopConversation, MAX_DURATION]);
+
   const startConversation = useCallback(async () => {
     try {
-      // Request microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      // Start the conversation with your agent
       await conversation.startSession({
         agentId: process.env.NEXT_PUBLIC_AGENT_ID,
       });
-      setMessages([]); // Clear messages when starting new conversation
+      setMessages([]);
+      setDuration(0);
     } catch (error) {
       console.error("Failed to start conversation:", error);
     }
   }, [conversation]);
 
-  const stopConversation = useCallback(async () => {
-    await conversation.endSession();
-  }, [conversation]);
-
   const isUserTurn =
     conversation.status === "connected" && !conversation.isSpeaking;
 
+  const progressPercent = (duration / MAX_DURATION) * 100;
+
   return (
     <>
-      <div className="flex gap-2 my-4">
+      <div className="flex gap-2 my-4 items-center">
         <button
           onClick={startConversation}
           disabled={conversation.status === "connected"}
@@ -172,6 +209,23 @@ export function Conversation() {
         >
           👋
         </button>
+
+        {conversation.status === "connected" && (
+          <div className="flex items-center gap-3 ml-4">
+            <div className="text-gray-200 min-w-[80px]">
+              {formatTime(duration)} / 5:00
+            </div>
+            <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-600 transition-all duration-1000 ease-linear"
+                style={{
+                  width: `${progressPercent}%`,
+                  backgroundColor: progressPercent > 80 ? "#ef4444" : "#22c55e",
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-4">
