@@ -5,7 +5,7 @@ import { useCallback, useState, useRef, useEffect } from "react";
 import { fal } from "@fal-ai/client";
 
 fal.config({
-  credentials: process.env.NEXT_PUBLIC_FAL_KEY,
+  proxyUrl: "/api/fal/proxy",
 });
 
 type ButtonProps = {
