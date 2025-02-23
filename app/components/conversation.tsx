@@ -2,6 +2,11 @@
 
 import { useConversation } from "@11labs/react";
 import { useCallback, useState, useRef, useEffect } from "react";
+import { fal } from "@fal-ai/client";
+
+fal.config({
+  credentials: process.env.NEXT_PUBLIC_FAL_KEY,
+});
 
 type ButtonProps = {
   onClick?: () => void;
@@ -41,20 +46,32 @@ function Button({
 type Message = {
   message: string;
   source: "ai" | "user";
+  generatedImageUrl?: string;
 };
 
 type ChatMessageLogProps = {
   messages: Message[];
 };
 
-function ChatMessageLog({ messages }: ChatMessageLogProps) {
+function ChatMessageLog({ messages: initialMessages }: ChatMessageLogProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [imageReplacements, setImageReplacements] = useState<{
-    [key: number]: boolean;
-  }>({});
+  const [messages, setMessages] = useState(initialMessages);
   const [loadingStates, setLoadingStates] = useState<{
     [key: number]: boolean;
   }>({});
+
+  useEffect(() => {
+    setMessages((prevMessages) => {
+      const imageUrlMap = new Map(
+        prevMessages.map((msg, idx) => [idx, msg.generatedImageUrl])
+      );
+
+      return initialMessages.map((msg, idx) => ({
+        ...msg,
+        generatedImageUrl: imageUrlMap.get(idx) || msg.generatedImageUrl,
+      }));
+    });
+  }, [initialMessages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -64,23 +81,64 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
     scrollToBottom();
   }, [messages]);
 
-  const handleReplaceWithImage = (messageIndex: number) => {
+  const handleGenerateImage = async (message: string, messageIndex: number) => {
+    if (loadingStates[messageIndex]) return; // Prevent duplicate generations
+
     setLoadingStates((prev) => ({
       ...prev,
       [messageIndex]: true,
     }));
 
-    setTimeout(() => {
+    try {
+      console.log("Generating image for prompt:", message);
+
+      const result = await fal.subscribe("fal-ai/flux/dev", {
+        input: {
+          prompt: message,
+        },
+        logs: true,
+        onQueueUpdate: (update) => {
+          if (update.status === "IN_PROGRESS") {
+            update.logs.map((log) => log.message).forEach(console.log);
+          }
+        },
+      });
+
+      console.log("Generation result:", result.data);
+      console.log("Request ID:", result.requestId);
+
+      if (result.data.images?.[0]?.url) {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg, idx) =>
+            idx === messageIndex
+              ? { ...msg, generatedImageUrl: result.data.images[0].url }
+              : msg
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to generate image:", error);
+    } finally {
       setLoadingStates((prev) => ({
         ...prev,
         [messageIndex]: false,
       }));
-      setImageReplacements((prev) => ({
-        ...prev,
-        [messageIndex]: true,
-      }));
-    }, 3000);
+    }
   };
+
+  // Automatically generate images for new AI messages
+  useEffect(() => {
+    messages.forEach((msg, idx) => {
+      if (
+        msg.source === "ai" &&
+        idx > 0 &&
+        !msg.generatedImageUrl &&
+        !loadingStates[idx]
+      ) {
+        handleGenerateImage(msg.message, idx);
+      }
+    });
+  }, [messages, loadingStates]);
 
   return (
     <>
@@ -150,24 +208,17 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
               </div>
               {msg.source === "ai" && messageIndex > 0 && (
                 <div className="mt-2">
-                  {imageReplacements[messageIndex] ? (
+                  {msg.generatedImageUrl ? (
                     <img
-                      src="https://placehold.co/300x200/333/FFF?text=Placeholder"
-                      alt="Placeholder"
+                      src={msg.generatedImageUrl}
+                      alt="Generated"
                       className="rounded-lg"
                     />
                   ) : (
-                    <Button
-                      onClick={() => handleReplaceWithImage(messageIndex)}
-                      variant="secondary"
-                      disabled={loadingStates[messageIndex]}
-                    >
-                      {loadingStates[messageIndex] ? (
-                        <span className="spinner">🌀</span>
-                      ) : (
-                        "✨ See"
-                      )}
-                    </Button>
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <span className="spinner">🌀</span>
+                      <span>Generating image...</span>
+                    </div>
                   )}
                 </div>
               )}
