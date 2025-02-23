@@ -3,6 +3,40 @@
 import { useConversation } from "@11labs/react";
 import { useCallback, useState, useRef, useEffect } from "react";
 
+type ButtonProps = {
+  onClick?: () => void;
+  disabled?: boolean;
+  variant?: "primary" | "danger" | "secondary";
+  children: React.ReactNode;
+};
+
+function Button({
+  onClick,
+  disabled,
+  variant = "primary",
+  children,
+}: ButtonProps) {
+  const baseStyles = "rounded-lg font-bold transition-colors px-4 py-2 text-md";
+
+  const variantStyles = {
+    primary:
+      "bg-green-500 hover:bg-green-600 text-green-900 disabled:bg-gray-800 disabled:opacity-50",
+    danger:
+      "bg-red-500 hover:bg-red-600 text-red-900 disabled:bg-gray-800 disabled:opacity-50",
+    secondary: "bg-gray-700 hover:bg-gray-600 text-gray-200",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseStyles} ${variantStyles[variant]}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 type Message = {
   message: string;
   source: "ai" | "user";
@@ -96,12 +130,12 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
                       className="rounded-lg"
                     />
                   ) : (
-                    <button
+                    <Button
                       onClick={() => handleReplaceWithImage(messageIndex)}
-                      className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded text-gray-200 transition-colors"
+                      variant="secondary"
                     >
-                      Replace with Image
-                    </button>
+                      ✨ See
+                    </Button>
                   )}
                 </div>
               )}
@@ -222,13 +256,13 @@ export function Conversation() {
         }`}
       >
         <div className="flex gap-2 justify-between max-w-md mx-auto">
-          <button
+          <Button
             onClick={startConversation}
             disabled={conversation.status === "connected"}
-            className="px-4 py-2 bg-green-500 rounded-lg text-green-900 disabled:bg-gray-800 disabled:opacity-50 font-bold"
+            variant="primary"
           >
             📞 {conversation.status !== "connected" && "Hello?"}
-          </button>
+          </Button>
 
           {conversation.status === "connected" && (
             <div className="flex items-center gap-3 ml-4">
@@ -248,13 +282,13 @@ export function Conversation() {
             </div>
           )}
 
-          <button
+          <Button
             onClick={stopConversation}
             disabled={conversation.status !== "connected"}
-            className="px-4 py-2 bg-red-500 rounded-lg text-red-900 disabled:bg-gray-800 disabled:opacity-50 font-bold"
+            variant="danger"
           >
             👋
-          </button>
+          </Button>
         </div>
       </div>
 
