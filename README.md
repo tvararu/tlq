@@ -18,7 +18,7 @@ npm run dev
 
 ## Possible improvements
 
-- [ ] Generate images for the AI responses
+- [x] Generate images for the AI responses
 - [ ] Add way to pause and resume the same conversation
 - [ ] Add textual reply options (not via microphone)
 
