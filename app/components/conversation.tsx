@@ -7,7 +7,6 @@ import { fal } from "@fal-ai/client";
 // Add type for LLM response
 type AnyLlmResponse = {
   output: string;
-  [key: string]: any;
 };
 
 fal.config({
@@ -110,8 +109,8 @@ ${text}`,
       console.log("LLM request ID:", result.requestId);
 
       // Extract the response from the LLM result
-      const llmResponse = result.data as unknown as AnyLlmResponse;
-      if (!llmResponse?.output) {
+      const llmResponse = result.data as AnyLlmResponse;
+      if (!llmResponse.output) {
         console.warn("No output from LLM, using original text");
         return text;
       }
