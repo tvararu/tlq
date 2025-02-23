@@ -186,7 +186,7 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
-const DEMO_MODE = true; // Toggle this to switch between demo and live mode
+const isDevelopment = process.env.NODE_ENV === "development";
 
 const DEMO_MESSAGES: Message[] = [
   {
@@ -242,7 +242,7 @@ const DEMO_MESSAGES: Message[] = [
 
 export function Conversation() {
   const [messages, setMessages] = useState<Message[]>(
-    DEMO_MODE ? DEMO_MESSAGES : []
+    isDevelopment ? DEMO_MESSAGES : []
   );
   const [duration, setDuration] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
