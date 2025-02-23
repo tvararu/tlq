@@ -14,6 +14,9 @@ type ChatMessageLogProps = {
 
 function ChatMessageLog({ messages }: ChatMessageLogProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [imageReplacements, setImageReplacements] = useState<{
+    [key: number]: boolean;
+  }>({});
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -22,6 +25,13 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const handleReplaceWithImage = (messageIndex: number) => {
+    setImageReplacements((prev) => ({
+      ...prev,
+      [messageIndex]: true,
+    }));
+  };
 
   return (
     <>
@@ -49,8 +59,8 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
           {messages.map((msg, messageIndex) => (
             <div
               key={messageIndex}
-              className={`flex ${
-                msg.source === "user" ? "justify-end" : "justify-start"
+              className={`flex flex-col ${
+                msg.source === "user" ? "items-end" : "items-start"
               }`}
             >
               <div
@@ -77,6 +87,24 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
                       </span>
                     ))}
               </div>
+              {msg.source === "ai" && messageIndex > 0 && (
+                <div className="mt-2">
+                  {imageReplacements[messageIndex] ? (
+                    <img
+                      src="https://placehold.co/300x200/333/FFF?text=AI+Response"
+                      alt="AI Response Placeholder"
+                      className="rounded-lg"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => handleReplaceWithImage(messageIndex)}
+                      className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded text-gray-200 transition-colors"
+                    >
+                      Replace with Image
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ))}
           <div ref={messagesEndRef} />
