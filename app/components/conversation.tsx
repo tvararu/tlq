@@ -4,6 +4,12 @@ import { useConversation } from "@11labs/react";
 import { useCallback, useState, useRef, useEffect } from "react";
 import { fal } from "@fal-ai/client";
 
+// Add type for LLM response
+type AnyLlmResponse = {
+  output: string;
+  [key: string]: any;
+};
+
 fal.config({
   proxyUrl: "/api/fal/proxy",
 });
@@ -47,6 +53,7 @@ type Message = {
   message: string;
   source: "ai" | "user";
   generatedImageUrl?: string;
+  processedText?: string;
 };
 
 type ChatMessageLogProps = {
@@ -81,6 +88,46 @@ function ChatMessageLog({ messages: initialMessages }: ChatMessageLogProps) {
     scrollToBottom();
   }, [messages]);
 
+  const processTextForImage = async (text: string): Promise<string> => {
+    try {
+      console.log("Processing text through LLM:", text);
+
+      const result = await fal.subscribe("fal-ai/any-llm", {
+        input: {
+          prompt: `Convert this text into a concise, visual description suitable for image generation. Focus on the key visual elements and remove any unnecessary context or dialogue. Make it descriptive but concise:
+
+${text}`,
+        },
+        logs: true,
+        onQueueUpdate: (update) => {
+          if (update.status === "IN_PROGRESS") {
+            update.logs.map((log) => log.message).forEach(console.log);
+          }
+        },
+      });
+
+      console.log("LLM processing result:", result.data);
+      console.log("LLM request ID:", result.requestId);
+
+      // Extract the response from the LLM result
+      const llmResponse = result.data as unknown as AnyLlmResponse;
+      if (!llmResponse?.output) {
+        console.warn("No output from LLM, using original text");
+        return text;
+      }
+
+      // Clean up the response - remove quotes if present and trim
+      const processedText = llmResponse.output
+        .replace(/^["']|["']$/g, "")
+        .trim();
+      console.log("Processed text for image generation:", processedText);
+      return processedText;
+    } catch (error) {
+      console.error("Failed to process text through LLM:", error);
+      return text; // Fallback to original text if processing fails
+    }
+  };
+
   const handleGenerateImage = async (message: string, messageIndex: number) => {
     if (loadingStates[messageIndex]) return; // Prevent duplicate generations
 
@@ -90,11 +137,14 @@ function ChatMessageLog({ messages: initialMessages }: ChatMessageLogProps) {
     }));
 
     try {
-      console.log("Generating image for prompt:", message);
+      // Process the text through LLM first
+      const processedPrompt = await processTextForImage(message);
+      console.log("Original text:", message);
+      console.log("Processed prompt:", processedPrompt);
 
       const result = await fal.subscribe("fal-ai/flux/dev", {
         input: {
-          prompt: message,
+          prompt: processedPrompt, // Now using the processed prompt
         },
         logs: true,
         onQueueUpdate: (update) => {
@@ -111,7 +161,11 @@ function ChatMessageLog({ messages: initialMessages }: ChatMessageLogProps) {
         setMessages((prevMessages) =>
           prevMessages.map((msg, idx) =>
             idx === messageIndex
-              ? { ...msg, generatedImageUrl: result.data.images[0].url }
+              ? {
+                  ...msg,
+                  generatedImageUrl: result.data.images[0].url,
+                  processedText: processedPrompt,
+                }
               : msg
           )
         );
@@ -211,7 +265,7 @@ function ChatMessageLog({ messages: initialMessages }: ChatMessageLogProps) {
                   {msg.generatedImageUrl ? (
                     <img
                       src={msg.generatedImageUrl}
-                      alt="Generated"
+                      alt={msg.processedText || "Generated image"}
                       className="rounded-lg"
                     />
                   ) : (
