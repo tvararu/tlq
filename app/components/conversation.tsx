@@ -23,7 +23,8 @@ function Button({
       "bg-green-500 hover:bg-green-600 text-green-900 disabled:bg-gray-800 disabled:opacity-50",
     danger:
       "bg-red-500 hover:bg-red-600 text-red-900 disabled:bg-gray-800 disabled:opacity-50",
-    secondary: "bg-gray-700 hover:bg-gray-600 text-gray-200",
+    secondary:
+      "bg-gray-700 hover:bg-gray-600 text-gray-200 disabled:bg-gray-800",
   };
 
   return (
@@ -51,6 +52,9 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
   const [imageReplacements, setImageReplacements] = useState<{
     [key: number]: boolean;
   }>({});
+  const [loadingStates, setLoadingStates] = useState<{
+    [key: number]: boolean;
+  }>({});
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,10 +65,21 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
   }, [messages]);
 
   const handleReplaceWithImage = (messageIndex: number) => {
-    setImageReplacements((prev) => ({
+    setLoadingStates((prev) => ({
       ...prev,
       [messageIndex]: true,
     }));
+
+    setTimeout(() => {
+      setLoadingStates((prev) => ({
+        ...prev,
+        [messageIndex]: false,
+      }));
+      setImageReplacements((prev) => ({
+        ...prev,
+        [messageIndex]: true,
+      }));
+    }, 3000);
   };
 
   return (
@@ -86,6 +101,18 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
         }
         .chat-container {
           transition: all 0.3s ease;
+        }
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        .spinner {
+          display: inline-block;
+          animation: spin 1s linear infinite;
         }
       `}</style>
       <div className="pt-32 w-full chat-container">
@@ -133,8 +160,13 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
                     <Button
                       onClick={() => handleReplaceWithImage(messageIndex)}
                       variant="secondary"
+                      disabled={loadingStates[messageIndex]}
                     >
-                      ✨ See
+                      {loadingStates[messageIndex] ? (
+                        <span className="spinner">🌀</span>
+                      ) : (
+                        "✨ See"
+                      )}
                     </Button>
                   )}
                 </div>
