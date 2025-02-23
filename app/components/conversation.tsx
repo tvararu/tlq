@@ -152,8 +152,8 @@ function ChatMessageLog({ messages }: ChatMessageLogProps) {
                 <div className="mt-2">
                   {imageReplacements[messageIndex] ? (
                     <img
-                      src="https://placehold.co/300x200/333/FFF?text=AI+Response"
-                      alt="AI Response Placeholder"
+                      src="https://placehold.co/300x200/333/FFF?text=Placeholder"
+                      alt="Placeholder"
                       className="rounded-lg"
                     />
                   ) : (
