@@ -211,6 +211,33 @@ const DEMO_MESSAGES: Message[] = [
       "Multivac was the first computer to be built by the Multivac Corporation. It was a large, complex machine that could store and process information.",
     source: "ai",
   },
+  {
+    message: "Can you tell me more about Alexander Adell and Bertram Lupov?",
+    source: "user",
+  },
+  {
+    message:
+      "Alexander Adell and Bertram Lupov were technicians who worked with Multivac. They were among the few humans who truly understood the complexity of the computer system. They spent their days monitoring and maintaining Multivac, ensuring it operated at peak efficiency. Their expertise and dedication made them invaluable to the operation of this remarkable machine.",
+    source: "ai",
+  },
+  {
+    message: "What was the five-dollar bet about?",
+    source: "user",
+  },
+  {
+    message:
+      "The five-dollar bet was about whether Multivac could be asked a question that it couldn't answer. Adell and Lupov were discussing this over drinks, which led to them asking Multivac what would later become known as 'the last question' - a question about the ultimate fate of the universe and the possibility of reversing entropy.",
+    source: "ai",
+  },
+  {
+    message: "What exactly is entropy?",
+    source: "user",
+  },
+  {
+    message:
+      "Entropy is a fundamental concept in physics that describes the gradual but inevitable trend of the universe toward increasing disorder and the dissipation of usable energy. In simple terms, it's the principle that everything in the universe is slowly running down, like a cosmic battery losing its charge. This concept becomes central to the story as it relates to humanity's ultimate question about the fate of the universe.",
+    source: "ai",
+  },
 ];
 
 export function Conversation() {
