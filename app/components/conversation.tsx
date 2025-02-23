@@ -120,8 +120,37 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
+const DEMO_MODE = true; // Toggle this to switch between demo and live mode
+
+const DEMO_MESSAGES: Message[] = [
+  {
+    message: "Hello. Would you like to listen to a story?",
+    source: "ai",
+  },
+  {
+    message: "Yes.",
+    source: "user",
+  },
+  {
+    message:
+      "The last question was asked for the first time, half in jest, on May 21, 2061, at a time when humanity first stepped into the light. The question came about as a result of a five-dollar bet over highballs, and it happened this way: Alexander Adell and Bertram Lupov were two of the faithful attendants of Multivac. As well as any human beings could, they knew what lay behind the cold, clicking, flashing face -- miles and miles of face -- of that giant computer.",
+    source: "ai",
+  },
+  {
+    message: "What is Multivac?",
+    source: "user",
+  },
+  {
+    message:
+      "Multivac was the first computer to be built by the Multivac Corporation. It was a large, complex machine that could store and process information.",
+    source: "ai",
+  },
+];
+
 export function Conversation() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(
+    DEMO_MODE ? DEMO_MESSAGES : []
+  );
   const [duration, setDuration] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
